@@ -47,7 +47,6 @@ def rowdump(datadict,dkeys,callfile):
     'this function requires import csv module to be active'
     output = list()
     for key in dkeys:
-        print key+' = '+str(datadict[key])+ '  ' + str(type(datadict[key]))
         if type(datadict[key]) is str or type(datadict[key]) is unicode :
             output.append(str(datadict[key]).strip())
         else :
@@ -82,7 +81,6 @@ for line in websites :
     try :
         html = urllib.urlopen(url).read()
     except:
-        print 'inoperable website: '+url
         rowdump(hasdata,keys,location_w)
         continue
     try : soup = BeautifulSoup(html.decode('utf-8'),'html.parser')
@@ -105,18 +103,15 @@ for line in websites :
             if term in space :
                 hasdata[col['Contact_link_URL']] = newrl
                 hasdata[col['Contact_link_text']] = space
-        #print 'contents = '+str(space)+ '  url =  '+ str(newrl)
         for part in management :
             if part in space and len(space) < 20 and publine < 1 :
                 hasdata[col['Management_link_text']] = space
                 hasdata[col['Management_link_URL']] = newrl
                 hasdata[col['access_time']] = datetime.datetime.utcnow()
                 namehas = False
-                print newrl
                 try :
                     html_s = urllib.urlopen(newrl).read()
                 except :
-                    print 'bad link'
                     continue
                 soup_s = BeautifulSoup(html_s.decode('utf-8'),'html.parser')
                 linksnum = True
@@ -131,23 +126,18 @@ for line in websites :
                         manname = itag.contents()
                     for title in titlelist :
                         if title in manname :
-                            print 'istitle triggered'
                             istitle =  True
                     mansplit = manname.split()
                     if not istitle and len(mansplit) == 2 and re.search('^[A-Z][a-z]+ [A-Z][a-z]+...',manname):
-                        print '------------------------------------------'
                         #manname = re.sub('[^a-zA-Z0-9,.- ]','',manname)
                         employee = manname
                         namehas = True
                         try :
-                            print employee
                             hasdata[col['Manager_name']] = employee
                         except :
-                            print itag
                             hasdata[col['Manager_name']] = 'bad-data'
                             namehas = False
                     elif namehas and istitle :
-                        print 'does this ever print'
                         manname = re.sub('[^A-Za-z0-9,.;: ]','',manname)
                         if len(manname) < 65 :
                             man_title = re.sub('[^A-Za-z0-9,.;: ]','',manname)
@@ -158,7 +148,6 @@ for line in websites :
                             print '------------------------------------------'
                         namehas = False
     if not mancount:
-        print 'no mgmt here'
         hasdata[col['access_time']] = datetime.datetime.utcnow()
         hasdata[col['Management_link_URL']] = 'None'
         rowdump(hasdata,keys,location_w)
@@ -180,81 +169,47 @@ def insert_into_contact(row, table_name):
 
     # Insert into contact table
 
-    print 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx START OF CONTACT xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-    print row[3]
-    print row[4]
-
     contact_link_url = row[3]
     contact_link_text = row[4]
 
     insert_sql = "INSERT IGNORE INTO "+ "contact (Contact_link_URL, Contact_link_text) VALUES ('" + contact_link_url + "', '" + contact_link_text + "')"
     select_sql = "SELECT LAST_INSERT_ID()"
 
-    print insert_sql
-    print select_sql
-
     with sql_db as cursor :
         try :
             cursor.execute(insert_sql)
             sql_txt_2 = "Select id FROM "+ table_name +" WHERE contact_link_url = '" + contact_link_url + "'"
-            print 'SQL Text 2 is: ' + sql_txt_2
             cursor.execute(sql_txt_2)
             result = cursor.fetchone()
-            print result
-            print 'the primary key for this '+ table_name +' is '+str(result["id"])
             return result["id"]
 
         finally :
             sql_db.commit
 
 
-    print 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx DONE WITH CONTACT xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-
 def insert_into_management(row, table_name):
     # Insert into management table
-
-    print 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx START OF management xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-    print row[5]
-    print row[6]
 
     Management_link_URL = row[5]
     Management_link_text = row[6]
     insert_sql = "INSERT IGNORE INTO "+ "management (Management_link_URL, Management_link_text) VALUES ('" + Management_link_URL + "', '" + Management_link_text + "')"
     select_sql = "SELECT LAST_INSERT_ID()"
 
-    print insert_sql
-    print select_sql
-
     with sql_db as cursor :
         try :
             cursor.execute(insert_sql)
-
             sql_txt_2 = "Select id FROM "+ table_name +" WHERE Management_link_URL = '" + Management_link_URL + "'"
-            print 'SQL Text 2 is: ' + sql_txt_2
             cursor.execute(sql_txt_2)
             result = cursor.fetchone()
-            print result
-            print 'the primary key for this '+ table_name +' is '+str(result["id"])
             return result["id"]
 
 
         finally :
             sql_db.commit
 
-    print 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx DONE WITH management xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-
 def insert_into_manager(row, table_name):
 
-    # Insert into contact table
-
-    print 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx START OF Manager xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-    print row[7]
-    print row[8]
+    # Insert into manager table
 
     Manager_name = row[7]
     Manager_title = row[8]
@@ -262,18 +217,12 @@ def insert_into_manager(row, table_name):
     insert_sql = "INSERT IGNORE INTO "+ table_name + " (Manager_name, Manager_title) VALUES ('" + Manager_name + "', '" + Manager_title + "')"
     select_sql = "SELECT LAST_INSERT_ID()"
 
-    print insert_sql
-    print select_sql
-
     with sql_db as cursor :
         try :
             cursor.execute(insert_sql)
             sql_txt_2 = "Select id FROM "+ table_name +" WHERE Manager_name = '" + Manager_name + "'"
-            print 'SQL Text 2 is: ' + sql_txt_2
             cursor.execute(sql_txt_2)
             result = cursor.fetchone()
-            print result
-            print 'the primary key for this '+ table_name +' is '+str(result["id"])
             return result["id"]
 
 
@@ -281,76 +230,45 @@ def insert_into_manager(row, table_name):
             sql_db.commit
 
 
-    print 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx DONE WITH Manager xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
 def insert_into_http(row, table_name):
 
-    # Insert into contact table
-
-    print 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx START OF HTTP response code xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-    print row[2]
+    # Insert into HTTP table
 
     HTTP_response_code = row[2]
 
     insert_sql = "INSERT IGNORE INTO "+ table_name + " (HTTP_response_code) VALUES (" + HTTP_response_code + ")"
     select_sql = "SELECT LAST_INSERT_ID()"
-
-    print insert_sql
-    print select_sql
-
     with sql_db as cursor :
         try :
             cursor.execute(insert_sql)
             sql_txt_2 = "Select id FROM "+ table_name +" WHERE  HTTP_response_code = " + HTTP_response_code
-            print 'SQL Text 2 is: ' + sql_txt_2
             cursor.execute(sql_txt_2)
             result = cursor.fetchone()
-            print result
-            print 'the primary key for this '+ table_name +' is '+str(result["id"])
             return result["id"]
 
         finally :
             sql_db.commit
 
 
-    print 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx DONE HTTP response code xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-
 def insert_into_website(row, table_name):
 
-    # Insert into contact table
-
-    print 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx START OF website xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-    print row[1]
+    # Insert into website table
 
     Website_URL = row[1]
 
     insert_sql = "INSERT IGNORE INTO "+ table_name + " (Website_URL) VALUES ('" + Website_URL + "')"
     select_sql = "SELECT LAST_INSERT_ID()"
-
-    print insert_sql
-    print select_sql
-
     with sql_db as cursor :
         try :
             cursor.execute(insert_sql)
             sql_txt_2 = "Select id FROM "+ table_name +" WHERE Website_URL = '" + Website_URL + "'"
-            print 'SQL Text 2 is: ' + sql_txt_2
             cursor.execute(sql_txt_2)
             result = cursor.fetchone()
-            print result
-            print 'the primary key for this '+ table_name +' is '+str(result["id"])
             return result["id"]
 
 
         finally :
             sql_db.commit
-
-    print 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Done with website xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-
 
 for row in reader :
     firstcol = True
@@ -363,7 +281,6 @@ for row in reader :
             if item is not 'sitenum' :
                 db_keys.append(item)
         rowzero = False
-        print 'omitted 1st row'
         continue
 
     website_id = insert_into_website(row, "website")
@@ -376,8 +293,6 @@ for row in reader :
     manager_id = insert_into_manager(row, "manager")
 
     insert_sql = "INSERT IGNORE INTO "+ "access" + " (access_time, http_id, website_id, management_id, contact_id, manager_id) VALUES ('" + row[9] + "', " + str(http_id) + ", " + str(website_id) + ", " + str(management_id) + ", " + str(contact_id) + ", " + str(manager_id) + " )"
-
-    print insert_sql
 
 
     with sql_db as cursor :
