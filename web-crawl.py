@@ -6,7 +6,9 @@ import os
 import datetime
 from bs4 import BeautifulSoup
 from pathlib import Path
-#this is where i live, for now all the files are being saved there as well
+
+
+# CSV file name
 sitenum = 1
 label = datetime.datetime.now()
 labeln = label.time()
@@ -20,25 +22,32 @@ readfile = 'webcrawl.txt'
 writefile = 'databox'+timetag+'.csv'
 location_r = os.path.join(workdir,readfile)
 location_w = os.path.join(workdir,writefile)
+
 #list of management terms
 contact_search = ['contact']
 management = ['people','management',' leadership','staff','everything','team','about','directors']
+
 #list of http-tags which may contain names of managers
 pertag = ['ahref','strong','p','h3','em','h2','h4','small']
+
 #list of titles which managers may
 titlelist = ['CEO','CTO','Developer','Manager','Journalist','Director','VP','Engineer','Engineering','Development','Founder','Partner','President','Officer','Senior']
+
 #list of .csv columns to organize data
 keys = ('sitenum','Website_URL','HTTP_response_Code','Contact_link_URL','Contact_link_text','Management_link_URL','Management_link_text','Manager_name','Manager_title','access_time')
+
 ## creates dictionary which will allow strings to be called by name, instead of thier location in the keys tuple
 hasdata = dict()
 col = dict()
 for key in keys :
     col[key] = key
 websites = open(location_r,'r')
+
 ###creates inital .csv file which only contains column headers (keys)
 with open(location_w,'wb') as fl :
     a = csv.writer(fl,delimiter=',')
     a.writerow(keys)
+
 ## defines function to write information to .csv file
 def rowdump(datadict,dkeys,callfile):
     'this function requires import csv module to be active'
@@ -52,6 +61,7 @@ def rowdump(datadict,dkeys,callfile):
     with open(callfile,'ab') as fd:  # top tip... 'a' means append here
         wr = csv.writer(fd,dialect='excel')
         wr.writerow(output)
+
 ##stolen function to get status codes will return None if no data is returned.
 def http_status_code(weburl) :
     try :
@@ -60,6 +70,7 @@ def http_status_code(weburl) :
     except :
         requests.ConnectionError
         return 404
+
 ######################################
 ##### now time for real data grab#####
 ######################################
