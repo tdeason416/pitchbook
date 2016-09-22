@@ -28,7 +28,7 @@ contact_search = ['contact']
 management = ['people','management',' leadership','staff','everything','team','about','directors']
 
 #list of http-tags which may contain names of managers
-pertag = ['ahref','strong','p','h3','em','h2','h4','small']
+pertag = ['ahref','strong','p','h3','em','h2','h4','small','a']
 
 #list of titles which managers may
 titlelist = ['CEO','CTO','Developer','Manager','Journalist','Director','VP','Engineer','Engineering','Development','Founder','Partner','President','Officer','Senior']
